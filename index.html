@@ -214,6 +214,7 @@
             background: #1a1a1a;
             border-radius: 10px;
             overflow: hidden;
+            cursor: pointer;
         }
         
         .timeline-markers {
@@ -252,7 +253,7 @@
             background: #4CAF50;
             box-shadow: 0 0 10px #4CAF50;
             transition: left 0.3s;
-            cursor: pointer;
+            pointer-events: none;
         }
         
         .timeline-cursor::after {
@@ -308,6 +309,11 @@
             background: rgba(255, 255, 255, 0.05);
         }
         
+        tr.current-time {
+            background: rgba(76, 175, 80, 0.2);
+            border-left: 3px solid #4CAF50;
+        }
+        
         .settings-panel {
             background: #2a2a2a;
             padding: 25px;
@@ -346,6 +352,23 @@
             border-radius: 5px;
         }
         
+        .save-settings-btn {
+            width: 100%;
+            padding: 15px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .save-settings-btn:hover {
+            background: #45a049;
+        }
+        
         .loading {
             text-align: center;
             padding: 50px;
@@ -362,22 +385,16 @@
         
         .arrow {
             display: inline-block;
-            transition: transform 0.3s;
         }
         
         .wind-compass {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             border: 2px solid rgba(255,255,255,0.3);
-            position: relative;
-        }
-        
-        .wind-compass .arrow {
-            font-size: 1.5em;
         }
     </style>
 </head>
@@ -392,24 +409,22 @@
             <input type="text" id="apiKey" placeholder="API Ключ Windy">
             <input type="number" id="lat" value="50.45" step="0.01" placeholder="Широта">
             <input type="number" id="lon" value="30.52" step="0.01" placeholder="Довгота">
-            <button onclick="fetchWeather()">Отримати прогноз</button>
+            <button id="fetchBtn">Отримати прогноз</button>
         </div>
         
         <div id="loading" class="loading" style="display: none;">⏳ Завантаження даних...</div>
         <div id="error" class="error" style="display: none;"></div>
         
         <div id="weatherContent" style="display: none;">
-            <!-- Dashboard Cards -->
             <div class="dashboard-grid" id="dashboardGrid"></div>
             
-            <!-- Timeline -->
             <div class="timeline-container">
                 <div class="timeline-header">
                     <div class="timeline-date" id="timelineDate">Завантаження...</div>
                     <div class="timeline-controls">
-                        <button onclick="timelinePlay()" id="playBtn">▶️ Програти</button>
-                        <button onclick="timelinePause()" id="pauseBtn" style="display: none;">⏸️ Пауза</button>
-                        <button onclick="timelineReset()">⏮️ Спочатку</button>
+                        <button id="playBtn">▶️ Програти</button>
+                        <button id="pauseBtn" style="display: none;">⏸️ Пауза</button>
+                        <button id="resetBtn">⏮️ Спочатку</button>
                     </div>
                 </div>
                 <div class="timeline-slider" id="timelineSlider">
@@ -423,105 +438,17 @@
                 </div>
             </div>
             
-            <!-- Tabs -->
             <div class="tabs">
-                <div class="tab active" onclick="showTab('hourly')">📊 Погодинний прогноз</div>
-                <div class="tab" onclick="showTab('profile')">📏 Профіль вітру</div>
-                <div class="tab" onclick="showTab('settings')">⚙️ Налаштування</div>
+                <div class="tab active" data-tab="hourly">📊 Погодинний прогноз</div>
+                <div class="tab" data-tab="profile">📏 Профіль вітру</div>
+                <div class="tab" data-tab="settings">⚙️ Налаштування</div>
             </div>
             
-            <!-- Hourly Forecast -->
             <div id="hourlyTab" class="tab-content active">
                 <div class="table-container">
-                    <table id="hourlyTable">
+                    <table>
                         <thead>
-                            <td>${temp}°C</td>
-                        </tr>
-                    `;
-                }
-            });
-
-            document.getElementById('profileBody').innerHTML = rows;
-        }
-
-        function updateTimeline() {
-            const cursor = document.getElementById('timelineCursor');
-            const percent = (currentTimeIndex / (weatherData.ts.length - 1)) * 100;
-            cursor.style.left = `calc(${percent}% + 10px)`;
-            
-            document.getElementById('timelineDate').textContent = 
-                formatDate(weatherData.ts[currentTimeIndex]) + ' ' + formatTime(weatherData.ts[currentTimeIndex]);
-        }
-
-        function timelinePlay() {
-            if (isPlaying) return;
-            isPlaying = true;
-            document.getElementById('playBtn').style.display = 'none';
-            document.getElementById('pauseBtn').style.display = 'block';
-            
-            playInterval = setInterval(() => {
-                currentTimeIndex++;
-                if (currentTimeIndex >= weatherData.ts.length) {
-                    currentTimeIndex = weatherData.ts.length - 1;
-                    timelinePause();
-                }
-                updateDisplay();
-            }, 1500); // 1.5 секунди
-        }
-
-        function timelinePause() {
-            isPlaying = false;
-            document.getElementById('playBtn').style.display = 'block';
-            document.getElementById('pauseBtn').style.display = 'none';
-            if (playInterval) {
-                clearInterval(playInterval);
-                playInterval = null;
-            }
-        }
-
-        function timelineReset() {
-            timelinePause();
-            currentTimeIndex = 0;
-            updateDisplay();
-        }
-
-        function saveSettings() {
-            settings.maxWind = parseFloat(document.getElementById('maxWind').value);
-            settings.maxGust = parseFloat(document.getElementById('maxGust').value);
-            settings.maxPrecip = parseFloat(document.getElementById('maxPrecip').value);
-            settings.minVisibility = parseFloat(document.getElementById('minVisibility').value);
-            settings.minTemp = parseFloat(document.getElementById('minTemp').value);
-            settings.maxTemp = parseFloat(document.getElementById('maxTemp').value);
-            
-            if (weatherData) {
-                updateDisplay();
-            }
-            
-            alert('✅ Налаштування збережено!');
-        }
-
-        // Завантажуємо збережені налаштування
-        window.onload = () => {
-            const saved = localStorage.getItem('uav-settings');
-            if (saved) {
-                const data = JSON.parse(saved);
-                Object.assign(settings, data);
-                document.getElementById('maxWind').value = settings.maxWind;
-                document.getElementById('maxGust').value = settings.maxGust;
-                document.getElementById('maxPrecip').value = settings.maxPrecip;
-                document.getElementById('minVisibility').value = settings.minVisibility;
-                document.getElementById('minTemp').value = settings.minTemp;
-                document.getElementById('maxTemp').value = settings.maxTemp;
-            }
-        };
-
-        // Зберігаємо налаштування при виході
-        window.onbeforeunload = () => {
-            localStorage.setItem('uav-settings', JSON.stringify(settings));
-        };
-    </script>
-</body>
-</html>r>
+                            <tr>
                                 <th>⏰ Час</th>
                                 <th>💨 Вітер (м/с)</th>
                                 <th>🌪️ Пориви (м/с)</th>
@@ -538,10 +465,9 @@
                 </div>
             </div>
             
-            <!-- Wind Profile -->
             <div id="profileTab" class="tab-content">
                 <div class="table-container">
-                    <table id="profileTable">
+                    <table>
                         <thead>
                             <tr>
                                 <th>⬆️ Висота</th>
@@ -555,7 +481,6 @@
                 </div>
             </div>
             
-            <!-- Settings -->
             <div id="settingsTab" class="tab-content">
                 <div class="settings-panel">
                     <div class="settings-group">
@@ -594,7 +519,7 @@
                         </div>
                     </div>
                     
-                    <button onclick="saveSettings()" style="width: 100%; padding: 15px; background: #4CAF50; border: none; border-radius: 10px; color: white; font-size: 16px; cursor: pointer; margin-top: 20px;">💾 Зберегти налаштування</button>
+                    <button class="save-settings-btn" id="saveSettingsBtn">💾 Зберегти налаштування</button>
                 </div>
             </div>
         </div>
@@ -625,9 +550,36 @@
             '800h': 2000
         };
 
+        // Ініціалізація
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Скрипт завантажено');
+            
+            // Кнопка отримання прогнозу
+            document.getElementById('fetchBtn').addEventListener('click', fetchWeather);
+            
+            // Таби
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showTab(tabName);
+                });
+            });
+            
+            // Timeline controls
+            document.getElementById('playBtn').addEventListener('click', timelinePlay);
+            document.getElementById('pauseBtn').addEventListener('click', timelinePause);
+            document.getElementById('resetBtn').addEventListener('click', timelineReset);
+            
+            // Settings
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            
+            // Завантажуємо збережені налаштування
+            loadSettings();
+        });
+
         function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
             
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.getElementById(tabName + 'Tab').classList.add('active');
@@ -767,6 +719,7 @@
             const markers = document.getElementById('timelineMarkers');
             const start = document.getElementById('timelineStart');
             const end = document.getElementById('timelineEnd');
+            const slider = document.getElementById('timelineSlider');
             
             markers.innerHTML = '';
             
@@ -781,12 +734,13 @@
             start.textContent = formatTime(weatherData.ts[0]);
             end.textContent = formatTime(weatherData.ts[weatherData.ts.length - 1]);
             
-            // Додаємо обробник кліку на таймлайн
-            document.getElementById('timelineSlider').onclick = (e) => {
+            // Обробник кліку на таймлайн
+            slider.onclick = (e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const percent = x / rect.width;
                 currentTimeIndex = Math.round(percent * (weatherData.ts.length - 1));
+                currentTimeIndex = Math.max(0, Math.min(currentTimeIndex, weatherData.ts.length - 1));
                 updateDisplay();
             };
         }
@@ -808,7 +762,7 @@
             const dewpoint = kelvinToCelsius(weatherData['dewpoint-surface'][i]);
             const rh = Math.round((weatherData['rh-surface'][i] || 0) * 100);
             const gust = weatherData['gust-surface'][i].toFixed(1);
-            const precip = ((weatherData['past3hprecip-surface'][i] || 0) * 1000 / 3).toFixed(1); // мм/год
+            const precip = ((weatherData['past3hprecip-surface'][i] || 0) * 1000 / 3).toFixed(1);
             const clouds = getCloudCoverage(
                 weatherData['lclouds-surface']?.[i],
                 weatherData['mclouds-surface']?.[i],
@@ -844,7 +798,7 @@
                 <div class="dashboard-card ${parseFloat(precip) > 0 ? 'warning' : 'good'}">
                     <div class="icon">🌧️</div>
                     <div class="label">Опади</div>
-                    <div class="value">${precip}%</div>
+                    <div class="value">${precip > 0 ? Math.round((precip / 3) * 100) + '%' : '0%'}</div>
                     <div class="subtitle">${precip} мм/год</div>
                 </div>
                 <div class="dashboard-card ${clouds > 80 ? 'warning' : 'good'}">
@@ -879,10 +833,10 @@
                     weatherData['hclouds-surface']?.[i]
                 );
 
-                const rowClass = i === currentTimeIndex ? 'style="background: rgba(76, 175, 80, 0.2);"' : '';
+                const rowClass = i === currentTimeIndex ? ' current-time' : '';
 
                 rows += `
-                    <tr ${rowClass}>
+                    <tr class="${rowClass}">
                         <td><strong>${formatTime(weatherData.ts[i])}</strong></td>
                         <td>${windSpeed.toFixed(1)}</td>
                         <td>${gust}</td>
@@ -922,4 +876,90 @@
                             <td><strong>${height}м</strong></td>
                             <td>${windSpeed.toFixed(1)}</td>
                             <td>${getWindArrow(windDir)} ${windDir}° ${getWindDirectionText(windDir)}</td>
-                            <t
+                            <td>${temp}°C</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            document.getElementById('profileBody').innerHTML = rows;
+        }
+
+        function updateTimeline() {
+            const cursor = document.getElementById('timelineCursor');
+            const percent = (currentTimeIndex / (weatherData.ts.length - 1)) * 100;
+            cursor.style.left = `calc(${percent}% + 10px)`;
+            
+            document.getElementById('timelineDate').textContent = 
+                formatDate(weatherData.ts[currentTimeIndex]) + ' ' + formatTime(weatherData.ts[currentTimeIndex]);
+        }
+
+        function timelinePlay() {
+            if (isPlaying) return;
+            isPlaying = true;
+            document.getElementById('playBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'block';
+            
+            playInterval = setInterval(() => {
+                currentTimeIndex++;
+                if (currentTimeIndex >= weatherData.ts.length) {
+                    currentTimeIndex = weatherData.ts.length - 1;
+                    timelinePause();
+                }
+                updateDisplay();
+            }, 1500);
+        }
+
+        function timelinePause() {
+            isPlaying = false;
+            document.getElementById('playBtn').style.display = 'block';
+            document.getElementById('pauseBtn').style.display = 'none';
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+
+        function timelineReset() {
+            timelinePause();
+            currentTimeIndex = 0;
+            updateDisplay();
+        }
+
+        function saveSettings() {
+            settings.maxWind = parseFloat(document.getElementById('maxWind').value);
+            settings.maxGust = parseFloat(document.getElementById('maxGust').value);
+            settings.maxPrecip = parseFloat(document.getElementById('maxPrecip').value);
+            settings.minVisibility = parseFloat(document.getElementById('minVisibility').value);
+            settings.minTemp = parseFloat(document.getElementById('minTemp').value);
+            settings.maxTemp = parseFloat(document.getElementById('maxTemp').value);
+            
+            localStorage.setItem('uav-settings', JSON.stringify(settings));
+            
+            if (weatherData) {
+                updateDisplay();
+            }
+            
+            alert('✅ Налаштування збережено!');
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('uav-settings');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    Object.assign(settings, data);
+                    document.getElementById('maxWind').value = settings.maxWind;
+                    document.getElementById('maxGust').value = settings.maxGust;
+                    document.getElementById('maxPrecip').value = settings.maxPrecip;
+                    document.getElementById('minVisibility').value = settings.minVisibility;
+                    document.getElementById('minTemp').value = settings.minTemp;
+                    document.getElementById('maxTemp').value = settings.maxTemp;
+                } catch (e) {
+                    console.error('Помилка завантаження налаштувань:', e);
+                }
+            }
+        }
+    </script>
+</body>
+</html>
