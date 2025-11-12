@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Windy Weather Dashboard</title>
+    <title>UAV Forecast - Windy</title>
     <style>
         * {
             margin: 0;
@@ -13,51 +13,61 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
-            padding: 20px;
+            background: #1a1a1a;
             color: #fff;
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
+            padding: 20px;
         }
         
         .header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 30px;
-            border-radius: 20px;
-            margin-bottom: 30px;
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c29 100%);
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-            text-align: center;
+            font-size: 1.5em;
+        }
+        
+        .flight-status {
+            background: rgba(76, 175, 80, 0.3);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            border: 2px solid #4CAF50;
         }
         
         .api-form {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-bottom: 20px;
         }
         
         .api-form input, .api-form button {
-            padding: 15px;
+            padding: 12px;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 14px;
         }
         
         .api-form input {
-            background: rgba(255, 255, 255, 0.9);
+            background: #2a2a2a;
+            color: #fff;
+            border: 1px solid #444;
         }
         
         .api-form button {
-            background: #27ae60;
+            background: #4CAF50;
             color: white;
             cursor: pointer;
             font-weight: bold;
@@ -65,48 +75,56 @@
         }
         
         .api-form button:hover {
-            background: #229954;
-            transform: translateY(-2px);
+            background: #45a049;
         }
         
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 1.5em;
-        }
-        
-        .weather-cards {
+        .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
         }
         
-        .weather-card {
-            background: rgba(30, 60, 114, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .dashboard-card {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
         }
         
-        .weather-card .icon {
-            font-size: 2.5em;
+        .dashboard-card.good {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 100%);
+        }
+        
+        .dashboard-card.warning {
+            border-color: #FF9800;
+            background: linear-gradient(135deg, #e65100 0%, #f57c00 100%);
+        }
+        
+        .dashboard-card.bad {
+            border-color: #f44336;
+            background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%);
+        }
+        
+        .dashboard-card .icon {
+            font-size: 2em;
             margin-bottom: 10px;
         }
         
-        .weather-card .title {
+        .dashboard-card .label {
             font-size: 0.9em;
             opacity: 0.8;
             margin-bottom: 5px;
         }
         
-        .weather-card .value {
+        .dashboard-card .value {
             font-size: 1.8em;
             font-weight: bold;
         }
         
-        .weather-card .subtitle {
+        .dashboard-card .subtitle {
             font-size: 0.85em;
             opacity: 0.7;
             margin-top: 5px;
@@ -116,55 +134,171 @@
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+            border-bottom: 2px solid #444;
+            overflow-x: auto;
         }
         
         .tab {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 12px 24px;
-            border-radius: 10px;
+            background: transparent;
+            padding: 15px 25px;
             cursor: pointer;
             transition: all 0.3s;
-            border: 2px solid transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #999;
+            white-space: nowrap;
         }
         
         .tab:hover {
-            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
         }
         
         .tab.active {
-            background: rgba(39, 174, 96, 0.3);
-            border-color: #27ae60;
+            color: #fff;
+            border-bottom-color: #4CAF50;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .timeline-container {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .timeline-date {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .timeline-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .timeline-controls button {
+            background: #444;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .timeline-controls button:hover {
+            background: #555;
+        }
+        
+        .timeline-controls button.active {
+            background: #4CAF50;
+        }
+        
+        .timeline-slider {
+            position: relative;
+            height: 80px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .timeline-markers {
+            display: flex;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 30px;
+            align-items: flex-end;
+            padding: 0 10px;
+        }
+        
+        .timeline-marker {
+            flex: 1;
+            text-align: center;
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .timeline-track {
+            position: absolute;
+            top: 35px;
+            left: 10px;
+            right: 10px;
+            height: 4px;
+            background: #444;
+            border-radius: 2px;
+        }
+        
+        .timeline-cursor {
+            position: absolute;
+            top: 20px;
+            width: 2px;
+            height: 40px;
+            background: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+            transition: left 0.3s;
+            cursor: pointer;
+        }
+        
+        .timeline-cursor::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: #4CAF50;
+            border: 2px solid #fff;
+            border-radius: 50%;
+        }
+        
+        .timeline-time {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #888;
         }
         
         .table-container {
-            background: rgba(30, 60, 114, 0.8);
-            backdrop-filter: blur(10px);
+            background: #2a2a2a;
             padding: 25px;
-            border-radius: 15px;
+            border-radius: 10px;
             overflow-x: auto;
-            margin-bottom: 30px;
-        }
-        
-        .table-container h2 {
-            margin-bottom: 20px;
-            font-size: 1.5em;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px;
         }
         
         th, td {
             padding: 12px;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid #444;
         }
         
         th {
-            background: rgba(39, 174, 96, 0.3);
+            background: #1a1a1a;
             font-weight: bold;
             position: sticky;
             top: 0;
@@ -174,115 +308,229 @@
             background: rgba(255, 255, 255, 0.05);
         }
         
+        .settings-panel {
+            background: #2a2a2a;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        
+        .settings-group {
+            margin-bottom: 25px;
+        }
+        
+        .settings-group h3 {
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .setting-item label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .setting-item input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 5px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5em;
+        }
+        
+        .error {
+            background: rgba(244, 67, 54, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
         .arrow {
             display: inline-block;
             transition: transform 0.3s;
         }
         
-        .warning {
-            background: rgba(230, 126, 34, 0.3);
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.9em;
+        .wind-compass {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
         }
         
-        .good {
-            background: rgba(39, 174, 96, 0.3);
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        
-        .bad {
-            background: rgba(231, 76, 60, 0.3);
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.9em;
-        }
-        
-        .error {
-            background: rgba(231, 76, 60, 0.8);
-            padding: 20px;
-            border-radius: 15px;
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .day-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-        }
-        
-        .day-tab {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.3s;
-            min-width: 120px;
-            text-align: center;
-        }
-        
-        .day-tab:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .day-tab.active {
-            background: rgba(39, 174, 96, 0.3);
-            border: 2px solid #27ae60;
+        .wind-compass .arrow {
+            font-size: 1.5em;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌤️ Windy Weather Dashboard</h1>
-            <div class="api-form">
-                <input type="text" id="apiKey" placeholder="API Ключ Windy">
-                <input type="number" id="lat" value="50.45" step="0.01" placeholder="Широта">
-                <input type="number" id="lon" value="30.52" step="0.01" placeholder="Довгота">
-                <button onclick="fetchWeather()">Отримати прогноз</button>
-            </div>
+            <h1>🚁 Можна літати - UAV Forecast</h1>
+            <div class="flight-status" id="flightStatus">✅ Відмінні умови</div>
         </div>
         
-        <div id="loading" class="loading" style="display: none;">
-            ⏳ Завантаження даних...
+        <div class="api-form">
+            <input type="text" id="apiKey" placeholder="API Ключ Windy">
+            <input type="number" id="lat" value="50.45" step="0.01" placeholder="Широта">
+            <input type="number" id="lon" value="30.52" step="0.01" placeholder="Довгота">
+            <button onclick="fetchWeather()">Отримати прогноз</button>
         </div>
         
+        <div id="loading" class="loading" style="display: none;">⏳ Завантаження даних...</div>
         <div id="error" class="error" style="display: none;"></div>
         
         <div id="weatherContent" style="display: none;">
-            <!-- Карточки погоди -->
-            <div class="weather-cards" id="weatherCards"></div>
+            <!-- Dashboard Cards -->
+            <div class="dashboard-grid" id="dashboardGrid"></div>
             
-            <!-- Вкладки -->
+            <!-- Timeline -->
+            <div class="timeline-container">
+                <div class="timeline-header">
+                    <div class="timeline-date" id="timelineDate">Завантаження...</div>
+                    <div class="timeline-controls">
+                        <button onclick="timelinePlay()" id="playBtn">▶️ Програти</button>
+                        <button onclick="timelinePause()" id="pauseBtn" style="display: none;">⏸️ Пауза</button>
+                        <button onclick="timelineReset()">⏮️ Спочатку</button>
+                    </div>
+                </div>
+                <div class="timeline-slider" id="timelineSlider">
+                    <div class="timeline-markers" id="timelineMarkers"></div>
+                    <div class="timeline-track"></div>
+                    <div class="timeline-cursor" id="timelineCursor"></div>
+                    <div class="timeline-time">
+                        <span id="timelineStart">00:00</span>
+                        <span id="timelineEnd">23:00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
             <div class="tabs">
                 <div class="tab active" onclick="showTab('hourly')">📊 Погодинний прогноз</div>
                 <div class="tab" onclick="showTab('profile')">📏 Профіль вітру</div>
+                <div class="tab" onclick="showTab('settings')">⚙️ Налаштування</div>
             </div>
             
-            <!-- Погодинний прогноз -->
-            <div id="hourlyTab" class="table-container">
-                <h2>⏰ Погодинний прогноз</h2>
-                <div class="day-tabs" id="hourlyDayTabs"></div>
-                <div style="overflow-x: auto;">
+            <!-- Hourly Forecast -->
+            <div id="hourlyTab" class="tab-content active">
+                <div class="table-container">
                     <table id="hourlyTable">
                         <thead>
-                            <tr>
+                            <td>${temp}°C</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            document.getElementById('profileBody').innerHTML = rows;
+        }
+
+        function updateTimeline() {
+            const cursor = document.getElementById('timelineCursor');
+            const percent = (currentTimeIndex / (weatherData.ts.length - 1)) * 100;
+            cursor.style.left = `calc(${percent}% + 10px)`;
+            
+            document.getElementById('timelineDate').textContent = 
+                formatDate(weatherData.ts[currentTimeIndex]) + ' ' + formatTime(weatherData.ts[currentTimeIndex]);
+        }
+
+        function timelinePlay() {
+            if (isPlaying) return;
+            isPlaying = true;
+            document.getElementById('playBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'block';
+            
+            playInterval = setInterval(() => {
+                currentTimeIndex++;
+                if (currentTimeIndex >= weatherData.ts.length) {
+                    currentTimeIndex = weatherData.ts.length - 1;
+                    timelinePause();
+                }
+                updateDisplay();
+            }, 1500); // 1.5 секунди
+        }
+
+        function timelinePause() {
+            isPlaying = false;
+            document.getElementById('playBtn').style.display = 'block';
+            document.getElementById('pauseBtn').style.display = 'none';
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+
+        function timelineReset() {
+            timelinePause();
+            currentTimeIndex = 0;
+            updateDisplay();
+        }
+
+        function saveSettings() {
+            settings.maxWind = parseFloat(document.getElementById('maxWind').value);
+            settings.maxGust = parseFloat(document.getElementById('maxGust').value);
+            settings.maxPrecip = parseFloat(document.getElementById('maxPrecip').value);
+            settings.minVisibility = parseFloat(document.getElementById('minVisibility').value);
+            settings.minTemp = parseFloat(document.getElementById('minTemp').value);
+            settings.maxTemp = parseFloat(document.getElementById('maxTemp').value);
+            
+            if (weatherData) {
+                updateDisplay();
+            }
+            
+            alert('✅ Налаштування збережено!');
+        }
+
+        // Завантажуємо збережені налаштування
+        window.onload = () => {
+            const saved = localStorage.getItem('uav-settings');
+            if (saved) {
+                const data = JSON.parse(saved);
+                Object.assign(settings, data);
+                document.getElementById('maxWind').value = settings.maxWind;
+                document.getElementById('maxGust').value = settings.maxGust;
+                document.getElementById('maxPrecip').value = settings.maxPrecip;
+                document.getElementById('minVisibility').value = settings.minVisibility;
+                document.getElementById('minTemp').value = settings.minTemp;
+                document.getElementById('maxTemp').value = settings.maxTemp;
+            }
+        };
+
+        // Зберігаємо налаштування при виході
+        window.onbeforeunload = () => {
+            localStorage.setItem('uav-settings', JSON.stringify(settings));
+        };
+    </script>
+</body>
+</html>r>
                                 <th>⏰ Час</th>
                                 <th>💨 Вітер (м/с)</th>
                                 <th>🌪️ Пориви (м/с)</th>
                                 <th>➤ Напрямок</th>
                                 <th>🌡️ Температура (°C)</th>
-                                <th>💧 Вологість</th>
-                                <th>🌧️ Опади (мм)</th>
-                                <th>☁️ Хмарність</th>
+                                <th>💧 Вологість (%)</th>
+                                <th>🌧️ Опади (мм/год)</th>
+                                <th>☁️ Хмарність (%)</th>
                                 <th>🌡️ Точка роси (°C)</th>
-                                <th>📊 Тиск (гПа)</th>
                             </tr>
                         </thead>
                         <tbody id="hourlyBody"></tbody>
@@ -290,23 +538,63 @@
                 </div>
             </div>
             
-            <!-- Профіль вітру -->
-            <div id="profileTab" class="table-container" style="display: none;">
-                <h2>📏 Профіль вітру (по висотах)</h2>
-                <div class="day-tabs" id="profileDayTabs"></div>
-                <div style="overflow-x: auto;">
+            <!-- Wind Profile -->
+            <div id="profileTab" class="tab-content">
+                <div class="table-container">
                     <table id="profileTable">
                         <thead>
                             <tr>
                                 <th>⬆️ Висота</th>
-                                <th>💨 Швидкість вітру</th>
-                                <th>🌪️ Швидкість порив</th>
+                                <th>💨 Швидкість вітру (м/с)</th>
                                 <th>➤ Напрямок</th>
-                                <th>🌡️ Температура</th>
+                                <th>🌡️ Температура (°C)</th>
                             </tr>
                         </thead>
                         <tbody id="profileBody"></tbody>
                     </table>
+                </div>
+            </div>
+            
+            <!-- Settings -->
+            <div id="settingsTab" class="tab-content">
+                <div class="settings-panel">
+                    <div class="settings-group">
+                        <h3>💨 Вітер</h3>
+                        <div class="setting-item">
+                            <label>Макс. швидкість вітру (м/с):</label>
+                            <input type="number" id="maxWind" value="10" step="1">
+                        </div>
+                        <div class="setting-item">
+                            <label>Макс. пориви (м/с):</label>
+                            <input type="number" id="maxGust" value="15" step="1">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <h3>☁️ Погода</h3>
+                        <div class="setting-item">
+                            <label>Макс. ймовірність опадів (%):</label>
+                            <input type="number" id="maxPrecip" value="30" step="5">
+                        </div>
+                        <div class="setting-item">
+                            <label>Мін. видимість (км):</label>
+                            <input type="number" id="minVisibility" value="3" step="0.5">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <h3>🌡️ Температура</h3>
+                        <div class="setting-item">
+                            <label>Мін. температура (°C):</label>
+                            <input type="number" id="minTemp" value="-20" step="1">
+                        </div>
+                        <div class="setting-item">
+                            <label>Макс. температура (°C):</label>
+                            <input type="number" id="maxTemp" value="40" step="1">
+                        </div>
+                    </div>
+                    
+                    <button onclick="saveSettings()" style="width: 100%; padding: 15px; background: #4CAF50; border: none; border-radius: 10px; color: white; font-size: 16px; cursor: pointer; margin-top: 20px;">💾 Зберегти налаштування</button>
                 </div>
             </div>
         </div>
@@ -314,9 +602,18 @@
 
     <script>
         let weatherData = null;
-        let currentHourlyDay = 0;
-        let currentProfileDay = 0;
-        let currentProfileHour = 0;
+        let currentTimeIndex = 0;
+        let isPlaying = false;
+        let playInterval = null;
+        
+        const settings = {
+            maxWind: 10,
+            maxGust: 15,
+            maxPrecip: 30,
+            minVisibility: 3,
+            minTemp: -20,
+            maxTemp: 40
+        };
 
         const levelHeights = {
             'surface': 10,
@@ -325,27 +622,15 @@
             '925h': 750,
             '900h': 1000,
             '850h': 1500,
-            '800h': 2000,
-            '700h': 3000,
-            '600h': 4200,
-            '500h': 5500,
-            '400h': 7200,
-            '300h': 9200,
-            '200h': 11800,
-            '150h': 13600
+            '800h': 2000
         };
 
-        function showTab(tab) {
+        function showTab(tabName) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
             
-            if (tab === 'hourly') {
-                document.getElementById('hourlyTab').style.display = 'block';
-                document.getElementById('profileTab').style.display = 'none';
-            } else {
-                document.getElementById('hourlyTab').style.display = 'none';
-                document.getElementById('profileTab').style.display = 'block';
-            }
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabName + 'Tab').classList.add('active');
         }
 
         function calculateWindSpeed(u, v) {
@@ -364,7 +649,7 @@
         }
 
         function getWindArrow(degrees) {
-            return `<span class="arrow" style="transform: rotate(${degrees}deg)">➤</span>`;
+            return `<div class="wind-compass"><span class="arrow" style="transform: rotate(${degrees}deg)">➤</span></div>`;
         }
 
         function kelvinToCelsius(k) {
@@ -373,7 +658,7 @@
 
         function formatDate(timestamp) {
             const date = new Date(timestamp);
-            return date.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit' });
+            return date.toLocaleDateString('uk-UA', { weekday: 'short', day: '2-digit', month: 'long' });
         }
 
         function formatTime(timestamp) {
@@ -384,6 +669,19 @@
         function getCloudCoverage(low, mid, high) {
             const total = Math.max(low || 0, mid || 0, high || 0);
             return Math.round(total * 100);
+        }
+
+        function checkFlightConditions(index) {
+            const u = weatherData['wind_u-surface'][index];
+            const v = weatherData['wind_v-surface'][index];
+            const windSpeed = calculateWindSpeed(u, v);
+            const gust = weatherData['gust-surface'][index];
+            const temp = parseFloat(kelvinToCelsius(weatherData['temp-surface'][index]));
+            
+            if (windSpeed > settings.maxWind || gust > settings.maxGust) return 'bad';
+            if (windSpeed > settings.maxWind * 0.7 || gust > settings.maxGust * 0.7) return 'warning';
+            if (temp < settings.minTemp || temp > settings.maxTemp) return 'warning';
+            return 'good';
         }
 
         async function fetchWeather() {
@@ -410,8 +708,8 @@
                         lat: lat,
                         lon: lon,
                         model: 'gfs',
-                        parameters: ['temp', 'wind', 'precip', 'pressure', 'windGust', 'dewpoint', 'rh', 'lclouds', 'mclouds', 'hclouds'],
-                        levels: ['surface', '1000h', '950h', '925h', '900h', '850h', '800h', '700h', '600h', '500h', '400h', '300h', '200h', '150h'],
+                        parameters: ['temp', 'wind', 'precip', 'windGust', 'dewpoint', 'rh', 'lclouds', 'mclouds', 'hclouds'],
+                        levels: ['surface', '1000h', '950h', '925h', '900h', '850h', '800h'],
                         key: apiKey
                     })
                 });
@@ -421,6 +719,7 @@
                 }
 
                 weatherData = await response.json();
+                currentTimeIndex = 0;
                 displayWeather();
                 
                 document.getElementById('loading').style.display = 'none';
@@ -438,90 +737,111 @@
         }
 
         function displayWeather() {
-            displayWeatherCards();
-            displayHourlyForecast();
-            displayWindProfile();
+            setupTimeline();
+            updateDisplay();
         }
 
-        function displayWeatherCards() {
-            const current = 0; // Перший елемент масиву
-            const u = weatherData['wind_u-surface'][current];
-            const v = weatherData['wind_v-surface'][current];
+        function setupTimeline() {
+            const markers = document.getElementById('timelineMarkers');
+            const start = document.getElementById('timelineStart');
+            const end = document.getElementById('timelineEnd');
+            
+            markers.innerHTML = '';
+            
+            // Показуємо кожну 3-ю годину
+            for (let i = 0; i < weatherData.ts.length; i += 3) {
+                const marker = document.createElement('div');
+                marker.className = 'timeline-marker';
+                marker.textContent = formatTime(weatherData.ts[i]).split(':')[0] + ':00';
+                markers.appendChild(marker);
+            }
+            
+            start.textContent = formatTime(weatherData.ts[0]);
+            end.textContent = formatTime(weatherData.ts[weatherData.ts.length - 1]);
+            
+            // Додаємо обробник кліку на таймлайн
+            document.getElementById('timelineSlider').onclick = (e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = x / rect.width;
+                currentTimeIndex = Math.round(percent * (weatherData.ts.length - 1));
+                updateDisplay();
+            };
+        }
+
+        function updateDisplay() {
+            updateDashboard();
+            updateHourlyTable();
+            updateWindProfile();
+            updateTimeline();
+        }
+
+        function updateDashboard() {
+            const i = currentTimeIndex;
+            const u = weatherData['wind_u-surface'][i];
+            const v = weatherData['wind_v-surface'][i];
             const windSpeed = calculateWindSpeed(u, v);
             const windDir = calculateWindDirection(u, v);
-            const temp = kelvinToCelsius(weatherData['temp-surface'][current]);
-            const dewpoint = kelvinToCelsius(weatherData['dewpoint-surface'][current]);
-            const rh = Math.round((weatherData['rh-surface'][current] || 0) * 100);
-            const gust = weatherData['gust-surface'][current].toFixed(1);
-            const pressure = (weatherData['pressure-surface'][current] / 100).toFixed(0);
-            const precip = ((weatherData['past3hprecip-surface'][current] || 0) * 1000).toFixed(1);
+            const temp = kelvinToCelsius(weatherData['temp-surface'][i]);
+            const dewpoint = kelvinToCelsius(weatherData['dewpoint-surface'][i]);
+            const rh = Math.round((weatherData['rh-surface'][i] || 0) * 100);
+            const gust = weatherData['gust-surface'][i].toFixed(1);
+            const precip = ((weatherData['past3hprecip-surface'][i] || 0) * 1000 / 3).toFixed(1); // мм/год
             const clouds = getCloudCoverage(
-                weatherData['lclouds-surface']?.[current],
-                weatherData['mclouds-surface']?.[current],
-                weatherData['hclouds-surface']?.[current]
+                weatherData['lclouds-surface']?.[i],
+                weatherData['mclouds-surface']?.[i],
+                weatherData['hclouds-surface']?.[i]
             );
 
+            const condition = checkFlightConditions(i);
+            const statusMap = {
+                good: '✅ Відмінні умови',
+                warning: '⚠️ Обережно',
+                bad: '❌ Не рекомендується'
+            };
+            document.getElementById('flightStatus').textContent = statusMap[condition];
+
             const cards = `
-                <div class="weather-card">
+                <div class="dashboard-card ${condition}">
                     <div class="icon">🌡️</div>
-                    <div class="title">Температура</div>
+                    <div class="label">Температура</div>
                     <div class="value">${temp}°C</div>
                     <div class="subtitle">Точка роси: ${dewpoint}°C<br>Вологість: ${rh}%</div>
                 </div>
-                <div class="weather-card">
+                <div class="dashboard-card ${windSpeed > settings.maxWind ? 'bad' : windSpeed > settings.maxWind * 0.7 ? 'warning' : 'good'}">
                     <div class="icon">💨</div>
-                    <div class="title">Вітер</div>
+                    <div class="label">Вітер</div>
                     <div class="value">${windSpeed.toFixed(1)} м/с</div>
-                    <div class="subtitle">${getWindArrow(windDir)} ${windDir}° ${getWindDirectionText(windDir)}</div>
+                    <div class="subtitle">${windDir}° ${getWindDirectionText(windDir)}</div>
                 </div>
-                <div class="weather-card">
+                <div class="dashboard-card ${gust > settings.maxGust ? 'bad' : gust > settings.maxGust * 0.7 ? 'warning' : 'good'}">
                     <div class="icon">🌪️</div>
-                    <div class="title">Пориви</div>
+                    <div class="label">Пориви</div>
                     <div class="value">${gust} м/с</div>
                 </div>
-                <div class="weather-card">
+                <div class="dashboard-card ${parseFloat(precip) > 0 ? 'warning' : 'good'}">
                     <div class="icon">🌧️</div>
-                    <div class="title">Опади</div>
-                    <div class="value">${precip} мм</div>
-                    <div class="subtitle">За останні 3 год</div>
+                    <div class="label">Опади</div>
+                    <div class="value">${precip}%</div>
+                    <div class="subtitle">${precip} мм/год</div>
                 </div>
-                <div class="weather-card">
+                <div class="dashboard-card ${clouds > 80 ? 'warning' : 'good'}">
                     <div class="icon">☁️</div>
-                    <div class="title">Хмарність</div>
+                    <div class="label">Хмарність</div>
                     <div class="value">${clouds}%</div>
-                </div>
-                <div class="weather-card">
-                    <div class="icon">📊</div>
-                    <div class="title">Тиск</div>
-                    <div class="value">${pressure} гПа</div>
                 </div>
             `;
 
-            document.getElementById('weatherCards').innerHTML = cards;
+            document.getElementById('dashboardGrid').innerHTML = cards;
         }
 
-        function displayHourlyForecast() {
-            // Групуємо дані по днях
-            const days = {};
-            weatherData.ts.forEach((timestamp, i) => {
-                const date = formatDate(timestamp);
-                if (!days[date]) days[date] = [];
-                days[date].push(i);
-            });
-
-            const dayKeys = Object.keys(days);
-            
-            // Створюємо вкладки днів
-            const dayTabsHtml = dayKeys.map((day, idx) => 
-                `<div class="day-tab ${idx === currentHourlyDay ? 'active' : ''}" onclick="selectHourlyDay(${idx})">${day}</div>`
-            ).join('');
-            document.getElementById('hourlyDayTabs').innerHTML = dayTabsHtml;
-
-            // Відображаємо дані для поточного дня
-            const currentDayIndices = days[dayKeys[currentHourlyDay]];
+        function updateHourlyTable() {
             let rows = '';
-
-            currentDayIndices.forEach(i => {
+            
+            // Показуємо 24 години від поточного часу
+            const endIndex = Math.min(currentTimeIndex + 24, weatherData.ts.length);
+            
+            for (let i = currentTimeIndex; i < endIndex; i++) {
                 const u = weatherData['wind_u-surface'][i];
                 const v = weatherData['wind_v-surface'][i];
                 const windSpeed = calculateWindSpeed(u, v);
@@ -530,96 +850,54 @@
                 const dewpoint = kelvinToCelsius(weatherData['dewpoint-surface'][i]);
                 const rh = Math.round((weatherData['rh-surface'][i] || 0) * 100);
                 const gust = weatherData['gust-surface'][i].toFixed(1);
-                const pressure = (weatherData['pressure-surface'][i] / 100).toFixed(0);
-                const precip = ((weatherData['past3hprecip-surface'][i] || 0) * 1000).toFixed(1);
+                const precip = ((weatherData['past3hprecip-surface'][i] || 0) * 1000 / 3).toFixed(1);
                 const clouds = getCloudCoverage(
                     weatherData['lclouds-surface']?.[i],
                     weatherData['mclouds-surface']?.[i],
                     weatherData['hclouds-surface']?.[i]
                 );
 
+                const rowClass = i === currentTimeIndex ? 'style="background: rgba(76, 175, 80, 0.2);"' : '';
+
                 rows += `
-                    <tr>
-                        <td>${formatTime(weatherData.ts[i])}</td>
+                    <tr ${rowClass}>
+                        <td><strong>${formatTime(weatherData.ts[i])}</strong></td>
                         <td>${windSpeed.toFixed(1)}</td>
                         <td>${gust}</td>
                         <td>${getWindArrow(windDir)} ${windDir}° ${getWindDirectionText(windDir)}</td>
                         <td>${temp}</td>
-                        <td>${rh}%</td>
+                        <td>${rh}</td>
                         <td>${precip}</td>
-                        <td>${clouds}%</td>
+                        <td>${clouds}</td>
                         <td>${dewpoint}</td>
-                        <td>${pressure}</td>
                     </tr>
                 `;
-            });
+            }
 
             document.getElementById('hourlyBody').innerHTML = rows;
         }
 
-        function selectHourlyDay(dayIndex) {
-            currentHourlyDay = dayIndex;
-            displayHourlyForecast();
-        }
-
-        function displayWindProfile() {
-            // Групуємо дані по днях
-            const days = {};
-            weatherData.ts.forEach((timestamp, i) => {
-                const date = formatDate(timestamp);
-                if (!days[date]) days[date] = [];
-                days[date].push(i);
-            });
-
-            const dayKeys = Object.keys(days);
-            
-            // Створюємо вкладки днів
-            const dayTabsHtml = dayKeys.map((day, idx) => 
-                `<div class="day-tab ${idx === currentProfileDay ? 'active' : ''}" onclick="selectProfileDay(${idx})">${day} ${formatTime(weatherData.ts[days[day][0]])}</div>`
-            ).join('');
-            document.getElementById('profileDayTabs').innerHTML = dayTabsHtml;
-
-            // Відображаємо профіль для першої години вибраного дня
-            const currentDayIndices = days[dayKeys[currentProfileDay]];
-            const hourIndex = currentDayIndices[0]; // Перша година дня
-
-            const levels = Object.keys(levelHeights).reverse();
+        function updateWindProfile() {
+            const i = currentTimeIndex;
+            const levels = Object.keys(levelHeights);
             let rows = '';
 
             levels.forEach(level => {
                 const uKey = `wind_u-${level}`;
                 const vKey = `wind_v-${level}`;
                 const tempKey = `temp-${level}`;
-                const gustKey = `gust-${level}`;
 
                 if (weatherData[uKey] && weatherData[vKey]) {
-                    const u = weatherData[uKey][hourIndex];
-                    const v = weatherData[vKey][hourIndex];
+                    const u = weatherData[uKey][i];
+                    const v = weatherData[vKey][i];
                     const windSpeed = calculateWindSpeed(u, v);
                     const windDir = calculateWindDirection(u, v);
-                    const temp = kelvinToCelsius(weatherData[tempKey][hourIndex]);
-                    const gust = weatherData[gustKey] ? weatherData[gustKey][hourIndex].toFixed(1) : '-';
+                    const temp = kelvinToCelsius(weatherData[tempKey][i]);
                     const height = levelHeights[level];
 
                     rows += `
                         <tr>
                             <td><strong>${height}м</strong></td>
-                            <td>${getWindArrow(windDir)} ${windSpeed.toFixed(1)} м/с / ${(windSpeed * 3.6).toFixed(0)} км/г</td>
-                            <td>${gust !== '-' ? `${getWindArrow(windDir)} ${gust} м/с / ${(parseFloat(gust) * 3.6).toFixed(0)} км/г` : '-'}</td>
-                            <td>${windDir}° ${getWindDirectionText(windDir)}</td>
-                            <td>${temp}°C</td>
-                        </tr>
-                    `;
-                }
-            });
-
-            document.getElementById('profileBody').innerHTML = rows;
-        }
-
-        function selectProfileDay(dayIndex) {
-            currentProfileDay = dayIndex;
-            displayWindProfile();
-        }
-    </script>
-</body>
-</html>
+                            <td>${windSpeed.toFixed(1)}</td>
+                            <td>${getWindArrow(windDir)} ${windDir}° ${getWindDirectionText(windDir)}</td>
+                            <t
