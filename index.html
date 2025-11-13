@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UAV Forecast Pro - 4 Models</title>
+    <title>UAV Forecast Pro</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -21,32 +21,23 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
 
-        .location-selector {
+        .location-display {
             display: flex;
             align-items: center;
             gap: 10px;
-            cursor: pointer;
             padding: 8px 12px;
             background: rgba(255,255,255,0.1);
             border-radius: 8px;
-            transition: all 0.2s;
+            cursor: pointer;
         }
 
-        .location-selector:hover {
+        .location-display:hover {
             background: rgba(255,255,255,0.15);
         }
 
-        .location-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        .icon-btn {
+        .btn-refresh {
             background: rgba(255,255,255,0.1);
             border: none;
             color: white;
@@ -55,11 +46,6 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 1.2rem;
-            transition: all 0.2s;
-        }
-
-        .icon-btn:hover {
-            background: rgba(255,255,255,0.2);
         }
 
         .container {
@@ -75,15 +61,9 @@
             margin-bottom: 20px;
         }
 
-        .model-selector-title {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 10px;
-        }
-
         .model-buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
 
@@ -95,24 +75,12 @@
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            transition: all 0.2s;
             text-align: center;
-        }
-
-        .model-btn:hover {
-            background: rgba(255,255,255,0.15);
         }
 
         .model-btn.active {
             background: rgba(76, 175, 80, 0.4);
             border-color: #4CAF50;
-        }
-
-        .model-tag {
-            display: block;
-            font-size: 0.7rem;
-            opacity: 0.7;
-            margin-top: 4px;
         }
 
         .tiles-grid {
@@ -134,22 +102,16 @@
             margin-bottom: 8px;
         }
 
-        .tile-header {
+        .tile-label {
             font-size: 0.75rem;
             opacity: 0.7;
-            margin-bottom: 8px;
             text-transform: uppercase;
         }
 
         .tile-value {
             font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .tile-sub {
-            font-size: 0.85rem;
-            opacity: 0.7;
+            margin: 8px 0;
         }
 
         .timeline-section {
@@ -172,28 +134,12 @@
             padding: 12px;
             background: rgba(255,255,255,0.05);
             border-radius: 8px;
-            cursor: pointer;
             border: 2px solid transparent;
         }
 
         .timeline-item.active {
             background: rgba(76, 175, 80, 0.3);
             border-color: #4CAF50;
-        }
-
-        .timeline-time {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .timeline-icon {
-            font-size: 1.2rem;
-            margin: 6px 0;
-        }
-
-        .timeline-wind {
-            font-size: 0.85rem;
         }
 
         .profile-section {
@@ -209,12 +155,12 @@
             margin-bottom: 15px;
         }
 
-        .profile-table {
+        table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        .profile-table th {
+        th {
             background: rgba(255,255,255,0.1);
             padding: 12px;
             text-align: left;
@@ -222,33 +168,14 @@
             border-bottom: 2px solid rgba(255,255,255,0.2);
         }
 
-        .profile-table td {
+        td {
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        .profile-table tr:hover {
+        tr:hover {
             background: rgba(255,255,255,0.05);
         }
-
-        .height-label {
-            font-weight: 700;
-            font-size: 1rem;
-        }
-
-        .source-label {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-left: 6px;
-        }
-
-        .source-gfs { background: rgba(76, 175, 80, 0.3); }
-        .source-icon { background: rgba(33, 150, 243, 0.3); }
-        .source-ecmwf { background: rgba(156, 39, 176, 0.3); }
-        .source-windy { background: rgba(255, 152, 0, 0.3); }
 
         .loading {
             text-align: center;
@@ -270,7 +197,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        .modal {
+        .modal-overlay {
             display: none;
             position: fixed;
             top: 0;
@@ -283,11 +210,11 @@
             justify-content: center;
         }
 
-        .modal.active {
+        .modal-overlay.show {
             display: flex;
         }
 
-        .modal-content {
+        .modal-box {
             background: #2c5f2d;
             border-radius: 12px;
             padding: 30px;
@@ -321,7 +248,7 @@
             font-size: 1rem;
         }
 
-        .preset-locations {
+        .preset-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
@@ -337,12 +264,12 @@
             cursor: pointer;
         }
 
-        .modal-buttons {
+        .modal-actions {
             display: flex;
             gap: 10px;
         }
 
-        .btn-primary {
+        .btn-apply {
             flex: 1;
             padding: 12px;
             background: #4CAF50;
@@ -353,7 +280,7 @@
             cursor: pointer;
         }
 
-        .btn-secondary {
+        .btn-cancel {
             flex: 1;
             padding: 12px;
             background: rgba(255,255,255,0.1);
@@ -364,174 +291,141 @@
             cursor: pointer;
         }
 
-        .comparison-section {
-            background: rgba(0,0,0,0.3);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .comparison-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .comparison-table th {
-            background: rgba(255,255,255,0.1);
-            padding: 10px;
-            text-align: center;
-            font-weight: 600;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
-        }
-
-        .comparison-table td {
-            padding: 10px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
         @media (max-width: 768px) {
             .tiles-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-            .tile-value {
-                font-size: 1.6rem;
+            .model-buttons {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="location-selector" onclick="openLocationModal()">
+        <div class="location-display" id="locationBtn">
             <span>📍</span>
-            <span class="location-name" id="locationName">Київ, Україна</span>
+            <span id="locationText">Київ, Україна</span>
         </div>
-        <button class="icon-btn" onclick="reloadData()" title="Оновити">🔄</button>
+        <button class="btn-refresh" id="refreshBtn">🔄</button>
     </div>
 
     <div class="container">
-        <div id="loading" class="loading">
+        <div id="loadingDiv" class="loading">
             <div class="spinner"></div>
             <p>Завантаження даних...</p>
         </div>
 
-        <!-- Вибір моделі -->
-        <div class="model-selector" id="modelSelector" style="display: none;">
-            <div class="model-selector-title">Оберіть модель прогнозу:</div>
-            <div class="model-buttons">
-                <button class="model-btn active" data-model="gfs" onclick="selectModel('gfs')">
-                    GFS
-                    <span class="model-tag">NOAA</span>
-                </button>
-                <button class="model-btn" data-model="icon" onclick="selectModel('icon')">
-                    ICON
-                    <span class="model-tag">DWD</span>
-                </button>
-                <button class="model-btn" data-model="ecmwf" onclick="selectModel('ecmwf')">
-                    ECMWF
-                    <span class="model-tag">Найточніший</span>
-                </button>
-                <button class="model-btn" data-model="windy" onclick="selectModel('windy')">
-                    Windy
-                    <span class="model-tag">8 висот</span>
-                </button>
-            </div>
+        <div class="model-selector" id="modelSelectorDiv" style="display: none;">
+            <div class="model-buttons" id="modelBtns"></div>
         </div>
 
-        <!-- Плитки -->
-        <div class="tiles-grid" id="tilesGrid" style="display: none;"></div>
+        <div class="tiles-grid" id="tilesDiv" style="display: none;"></div>
 
-        <!-- Timeline -->
-        <div class="timeline-section" id="timelineSection" style="display: none;">
+        <div class="timeline-section" id="timelineDiv" style="display: none;">
             <div class="section-title">Прогноз по годинах</div>
             <div class="timeline-scroll" id="timelineScroll"></div>
         </div>
 
-        <!-- Профіль вітру -->
-        <div class="profile-section" id="profileSection" style="display: none;">
-            <div class="section-title">Профіль вітру на висотах</div>
-            <table class="profile-table" id="profileTable"></table>
+        <div class="profile-section" id="profileDiv" style="display: none;">
+            <div class="section-title">Профіль вітру</div>
+            <table id="profileTable"></table>
         </div>
 
-        <!-- Порівняння моделей -->
-        <div class="comparison-section" id="comparisonSection" style="display: none;">
-            <div class="section-title">Порівняння моделей (поточний час)</div>
-            <table class="comparison-table" id="comparisonTable"></table>
+        <div class="profile-section" id="compareDiv" style="display: none;">
+            <div class="section-title">Порівняння моделей</div>
+            <table id="compareTable"></table>
         </div>
     </div>
 
-    <!-- Modal -->
-    <div class="modal" id="locationModal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
             <div class="modal-title">Вибір локації</div>
             <div class="input-group">
                 <label>Широта:</label>
-                <input type="number" id="inputLat" step="0.01" value="50.45">
+                <input type="number" id="latInput" step="0.01" value="50.45">
             </div>
             <div class="input-group">
                 <label>Довгота:</label>
-                <input type="number" id="inputLon" step="0.01" value="30.52">
+                <input type="number" id="lonInput" step="0.01" value="30.52">
             </div>
             <div class="input-group">
                 <label>Назва:</label>
-                <input type="text" id="inputName" value="Київ, Україна">
+                <input type="text" id="nameInput" value="Київ, Україна">
             </div>
-            <div class="preset-locations">
-                <button class="preset-btn" onclick="setPreset(50.45, 30.52, 'Київ')">🇺🇦 Київ</button>
-                <button class="preset-btn" onclick="setPreset(46.48, 30.73, 'Одеса')">🇺🇦 Одеса</button>
-                <button class="preset-btn" onclick="setPreset(49.99, 36.23, 'Харків')">🇺🇦 Харків</button>
-                <button class="preset-btn" onclick="setPreset(48.46, 35.05, 'Дніпро')">🇺🇦 Дніпро</button>
+            <div class="preset-grid">
+                <button class="preset-btn" data-lat="50.45" data-lon="30.52" data-name="Київ">🇺🇦 Київ</button>
+                <button class="preset-btn" data-lat="46.48" data-lon="30.73" data-name="Одеса">🇺🇦 Одеса</button>
+                <button class="preset-btn" data-lat="49.99" data-lon="36.23" data-name="Харків">🇺🇦 Харків</button>
+                <button class="preset-btn" data-lat="48.46" data-lon="35.05" data-name="Дніпро">🇺🇦 Дніпро</button>
             </div>
-            <div class="modal-buttons">
-                <button class="btn-primary" onclick="applyLocation()">Застосувати</button>
-                <button class="btn-secondary" onclick="closeLocationModal()">Скасувати</button>
+            <div class="modal-actions">
+                <button class="btn-apply" id="applyBtn">Застосувати</button>
+                <button class="btn-cancel" id="cancelBtn">Скасувати</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Стан додатку
-        const appState = {
-            currentLocation: { lat: 50.45, lon: 30.52, name: 'Київ, Україна' },
+        // Глобальний стан
+        const STATE = {
+            lat: 50.45,
+            lon: 30.52,
+            name: 'Київ, Україна',
             currentModel: 'gfs',
-            weatherData: {}
+            data: {}
         };
 
         // Ініціалізація
-        document.addEventListener('DOMContentLoaded', () => {
-            loadAllData();
-        });
+        document.addEventListener('DOMContentLoaded', init);
 
-        // Завантаження всіх даних
+        function init() {
+            setupEventListeners();
+            loadAllData();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('locationBtn').addEventListener('click', openModal);
+            document.getElementById('refreshBtn').addEventListener('click', loadAllData);
+            document.getElementById('applyBtn').addEventListener('click', applyNewLocation);
+            document.getElementById('cancelBtn').addEventListener('click', closeModal);
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('latInput').value = btn.dataset.lat;
+                    document.getElementById('lonInput').value = btn.dataset.lon;
+                    document.getElementById('nameInput').value = btn.dataset.name + ', Україна';
+                });
+            });
+        }
+
         async function loadAllData() {
             showLoading(true);
-            
+
             try {
                 const [gfs, icon, ecmwf, windy] = await Promise.all([
-                    fetchOpenMeteo('best_match'),
-                    fetchOpenMeteo('icon_global'),
-                    fetchOpenMeteo('ecmwf_ifs025'),
+                    fetchOM('best_match'),
+                    fetchOM('icon_global'),
+                    fetchOM('ecmwf_ifs025'),
                     fetchWindy()
                 ]);
 
-                appState.weatherData = { gfs, icon, ecmwf, windy };
-                console.log('Завантажені дані:', appState.weatherData);
+                STATE.data = { gfs, icon, ecmwf, windy };
+                console.log('Data loaded:', STATE.data);
 
-                renderUI();
-                showAllSections();
+                renderAll();
+                showSections();
             } catch (error) {
-                console.error('Помилка:', error);
-                alert('Помилка завантаження: ' + error.message);
+                console.error('Error:', error);
+                alert('Помилка: ' + error.message);
             } finally {
                 showLoading(false);
             }
         }
 
-        // Open-Meteo API
-        async function fetchOpenMeteo(model) {
-            const { lat, lon } = appState.currentLocation;
+        async function fetchOM(model) {
             const url = `https://api.open-meteo.com/v1/forecast?` +
-                `latitude=${lat}&longitude=${lon}` +
+                `latitude=${STATE.lat}&longitude=${STATE.lon}` +
                 `&models=${model}` +
                 `&hourly=windspeed_10m,windspeed_80m,windspeed_120m,windspeed_180m` +
                 `,winddirection_10m,winddirection_80m,winddirection_120m,winddirection_180m` +
@@ -539,153 +433,179 @@
                 `,relativehumidity_2m,cloudcover,visibility,precipitation,weathercode` +
                 `&timezone=auto&forecast_days=2`;
 
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`Open-Meteo ${model} error`);
-            return await response.json();
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`Open-Meteo ${model} failed`);
+            return await res.json();
         }
 
-        // Windy API
         async function fetchWindy() {
-            const { lat, lon } = appState.currentLocation;
-            const response = await fetch('https://api.windy.com/api/point-forecast/v2', {
+            const res = await fetch('https://api.windy.com/api/point-forecast/v2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    lat, lon,
+                    lat: STATE.lat,
+                    lon: STATE.lon,
                     model: "gfs",
                     parameters: ["wind", "temp"],
                     levels: ["surface", "950h", "900h", "850h", "800h", "700h", "600h", "500h"],
                     key: "8LSlMIu1xWAVn4ePmrgxIMyzvg9VBC6G"
                 })
             });
-            if (!response.ok) throw new Error('Windy API error');
-            return await response.json();
+            if (!res.ok) throw new Error('Windy failed');
+            return await res.json();
         }
 
-        // Рендеринг UI
-        function renderUI() {
-            const model = appState.currentModel;
-            const data = appState.weatherData[model];
-            
-            if (!data) return;
-
-            if (model === 'windy') {
-                renderWindyUI(data);
-            } else {
-                renderOpenMeteoUI(data);
-            }
-
+        function renderAll() {
+            renderModelButtons();
+            renderTiles();
+            renderTimeline();
+            renderProfile();
             renderComparison();
         }
 
-        // Рендеринг Open-Meteo
-        function renderOpenMeteoUI(data) {
-            const now = findCurrentHourIndex(data);
-            
-            // Плитки
-            const tiles = [
-                { icon: '💨', label: 'Вітер', value: `${Math.round(data.hourly.windspeed_10m[now])} км/год` },
-                { icon: '🌪️', label: 'Пориви', value: `${Math.round(data.hourly.windgusts_10m[now])} км/год` },
-                { icon: '🌡️', label: 'Температура', value: `${Math.round(data.hourly.temperature_2m[now])}°C` },
-                { icon: '💧', label: 'Вологість', value: `${data.hourly.relativehumidity_2m[now]}%` },
-                { icon: '☁️', label: 'Хмарність', value: `${data.hourly.cloudcover[now]}%` },
-                { icon: '👁️', label: 'Видимість', value: `${Math.round(data.hourly.visibility[now]/1000)} км` }
+        function renderModelButtons() {
+            const models = [
+                { id: 'gfs', name: 'GFS', desc: 'NOAA' },
+                { id: 'icon', name: 'ICON', desc: 'DWD' },
+                { id: 'ecmwf', name: 'ECMWF', desc: 'Найточніший' },
+                { id: 'windy', name: 'Windy', desc: '8 висот' }
             ];
 
-            document.getElementById('tilesGrid').innerHTML = tiles.map(t => `
-                <div class="tile">
-                    <div class="tile-icon">${t.icon}</div>
-                    <div class="tile-header">${t.label}</div>
-                    <div class="tile-value">${t.value}</div>
-                </div>
+            document.getElementById('modelBtns').innerHTML = models.map(m => `
+                <button class="model-btn ${m.id === STATE.currentModel ? 'active' : ''}" 
+                        onclick="changeModel('${m.id}')">
+                    ${m.name}<br><small>${m.desc}</small>
+                </button>
             `).join('');
+        }
 
-            // Timeline
-            const timeline = data.hourly.time.slice(0, 24).map((time, i) => {
-                const hour = new Date(time).getHours().toString().padStart(2, '0');
-                const wind = Math.round(data.hourly.windspeed_10m[i]);
-                const icon = getWeatherIcon(data.hourly.weathercode[i]);
+        function changeModel(model) {
+            STATE.currentModel = model;
+            renderAll();
+        }
+
+        function renderTiles() {
+            const model = STATE.currentModel;
+            const data = STATE.data[model];
+            if (!data) return;
+
+            if (model === 'windy') {
+                const wind = calcWind(data['wind_u-surface'][0], data['wind_v-surface'][0]);
+                const temp = data['temp-surface'][0] - 273.15;
+                document.getElementById('tilesDiv').innerHTML = `
+                    <div class="tile">
+                        <div class="tile-icon">💨</div>
+                        <div class="tile-label">Вітер</div>
+                        <div class="tile-value">${Math.round(wind.speed)} км/год</div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-icon">🌡️</div>
+                        <div class="tile-label">Температура</div>
+                        <div class="tile-value">${Math.round(temp)}°C</div>
+                    </div>
+                `;
+            } else {
+                const h = data.hourly;
+                const now = findNow(data);
+                document.getElementById('tilesDiv').innerHTML = `
+                    <div class="tile">
+                        <div class="tile-icon">💨</div>
+                        <div class="tile-label">Вітер</div>
+                        <div class="tile-value">${Math.round(h.windspeed_10m[now])} км/год</div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-icon">🌪️</div>
+                        <div class="tile-label">Пориви</div>
+                        <div class="tile-value">${Math.round(h.windgusts_10m[now])} км/год</div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-icon">🌡️</div>
+                        <div class="tile-label">Температура</div>
+                        <div class="tile-value">${Math.round(h.temperature_2m[now])}°C</div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-icon">💧</div>
+                        <div class="tile-label">Вологість</div>
+                        <div class="tile-value">${h.relativehumidity_2m[now]}%</div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-icon">☁️</div>
+                        <div class="tile-label">Хмарність</div>
+                        <div class="tile-value">${h.cloudcover[now]}%</div>
+                    </div>
+                    <div class="tile">
+                        <div class="tile-icon">👁️</div>
+                        <div class="tile-label">Видимість</div>
+                        <div class="tile-value">${Math.round(h.visibility[now]/1000)} км</div>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTimeline() {
+            const model = STATE.currentModel;
+            if (model === 'windy') return;
+
+            const data = STATE.data[model];
+            if (!data) return;
+
+            const h = data.hourly;
+            const html = h.time.slice(0, 24).map((t, i) => {
+                const hour = new Date(t).getHours().toString().padStart(2, '0');
+                const wind = Math.round(h.windspeed_10m[i]);
                 return `
                     <div class="timeline-item ${i === 0 ? 'active' : ''}">
-                        <div class="timeline-time">${hour}:00</div>
-                        <div class="timeline-icon">${icon}</div>
-                        <div class="timeline-wind">${wind} км/год</div>
+                        <div>${hour}:00</div>
+                        <div style="font-size: 1.2rem; margin: 8px 0;">☀️</div>
+                        <div>${wind} км/год</div>
                     </div>
                 `;
             }).join('');
 
-            document.getElementById('timelineScroll').innerHTML = timeline;
-
-            // Профіль вітру
-            renderWindProfile();
+            document.getElementById('timelineScroll').innerHTML = html;
         }
 
-        // Рендеринг Windy
-        function renderWindyUI(data) {
-            const wind = calculateWind(data['wind_u-surface'][0], data['wind_v-surface'][0]);
-            const temp = kelvinToCelsius(data['temp-surface'][0]);
-
-            const tiles = [
-                { icon: '💨', label: 'Вітер', value: `${Math.round(wind.speed)} км/год` },
-                { icon: '🌡️', label: 'Температура', value: `${Math.round(temp)}°C` }
-            ];
-
-            document.getElementById('tilesGrid').innerHTML = tiles.map(t => `
-                <div class="tile">
-                    <div class="tile-icon">${t.icon}</div>
-                    <div class="tile-header">${t.label}</div>
-                    <div class="tile-value">${t.value}</div>
-                </div>
-            `).join('');
-
-            renderWindProfile();
-        }
-
-        // Профіль вітру
-        function renderWindProfile() {
-            const model = appState.currentModel;
+        function renderProfile() {
+            const model = STATE.currentModel;
             let html = '<thead><tr><th>Висота</th><th>Швидкість</th><th>Пориви</th><th>Напрямок</th><th>Темп.</th></tr></thead><tbody>';
 
             if (model === 'windy') {
-                const wd = appState.weatherData.windy;
+                const wd = STATE.data.windy;
                 const levels = {
                     'surface': '10м', '950h': '500м', '900h': '1000м', '850h': '1500м',
                     '800h': '2000м', '700h': '3000м', '600h': '4200м', '500h': '5500м'
                 };
 
-                Object.entries(levels).forEach(([level, height]) => {
-                    const wind = calculateWind(wd[`wind_u-${level}`][0], wd[`wind_v-${level}`][0]);
-                    const temp = kelvinToCelsius(wd[`temp-${level}`][0]);
+                Object.entries(levels).forEach(([lvl, height]) => {
+                    const wind = calcWind(wd[`wind_u-${lvl}`][0], wd[`wind_v-${lvl}`][0]);
+                    const temp = wd[`temp-${lvl}`][0] - 273.15;
                     html += `
                         <tr>
-                            <td><span class="height-label">${height}</span> <span class="source-label source-windy">Windy</span></td>
+                            <td><strong>${height}</strong> <span style="font-size: 0.7rem; opacity: 0.7;">Windy</span></td>
                             <td>${Math.round(wind.speed)} км/год</td>
                             <td>-</td>
-                            <td>${Math.round(wind.direction)}° (${getDirectionName(wind.direction)})</td>
+                            <td>${Math.round(wind.direction)}° (${getDir(wind.direction)})</td>
                             <td>${Math.round(temp)}°C</td>
                         </tr>
                     `;
                 });
             } else {
-                const data = appState.weatherData[model].hourly;
-                const now = findCurrentHourIndex(appState.weatherData[model]);
-                const sourceClass = model === 'gfs' ? 'source-gfs' : model === 'icon' ? 'source-icon' : 'source-ecmwf';
-                const sourceName = model.toUpperCase();
+                const data = STATE.data[model];
+                const h = data.hourly;
+                const now = findNow(data);
 
-                const levels = [
-                    { h: '10м', s: data.windspeed_10m[now], g: data.windgusts_10m[now], d: data.winddirection_10m[now], t: data.temperature_2m[now] },
-                    { h: '80м', s: data.windspeed_80m[now], g: '-', d: data.winddirection_80m[now], t: data.temperature_80m[now] },
-                    { h: '120м', s: data.windspeed_120m[now], g: '-', d: data.winddirection_120m[now], t: data.temperature_120m[now] },
-                    { h: '180м', s: data.windspeed_180m[now], g: '-', d: data.winddirection_180m[now], t: data.temperature_180m[now] }
-                ];
-
-                levels.forEach(l => {
+                [
+                    { ht: '10м', s: h.windspeed_10m[now], g: h.windgusts_10m[now], d: h.winddirection_10m[now], t: h.temperature_2m[now] },
+                    { ht: '80м', s: h.windspeed_80m[now], g: '-', d: h.winddirection_80m[now], t: h.temperature_80m[now] },
+                    { ht: '120м', s: h.windspeed_120m[now], g: '-', d: h.winddirection_120m[now], t: h.temperature_120m[now] },
+                    { ht: '180м', s: h.windspeed_180m[now], g: '-', d: h.winddirection_180m[now], t: h.temperature_180m[now] }
+                ].forEach(l => {
                     html += `
                         <tr>
-                            <td><span class="height-label">${l.h}</span> <span class="source-label ${sourceClass}">${sourceName}</span></td>
+                            <td><strong>${l.ht}</strong> <span style="font-size: 0.7rem; opacity: 0.7;">${model.toUpperCase()}</span></td>
                             <td>${Math.round(l.s)} км/год</td>
                             <td>${typeof l.g === 'number' ? Math.round(l.g) + ' км/год' : l.g}</td>
-                            <td>${Math.round(l.d)}° (${getDirectionName(l.d)})</td>
+                            <td>${Math.round(l.d)}° (${getDir(l.d)})</td>
                             <td>${Math.round(l.t)}°C</td>
                         </tr>
                     `;
@@ -696,39 +616,31 @@
             document.getElementById('profileTable').innerHTML = html;
         }
 
-        // Порівняння моделей
         function renderComparison() {
             let html = '<thead><tr><th>Параметр</th><th>GFS</th><th>ICON</th><th>ECMWF</th><th>Windy</th></tr></thead><tbody>';
 
-            const params = ['Вітер 10м', 'Температура', 'Вологість'];
-            
-            params.forEach(param => {
+            ['Вітер 10м', 'Температура'].forEach(param => {
                 html += `<tr><td><strong>${param}</strong></td>`;
-                
-                ['gfs', 'icon', 'ecmwf'].forEach(model => {
-                    const data = appState.weatherData[model];
-                    if (data) {
-                        const now = findCurrentHourIndex(data);
-                        let value = '-';
-                        if (param === 'Вітер 10м') value = `${Math.round(data.hourly.windspeed_10m[now])} км/год`;
-                        else if (param === 'Температура') value = `${Math.round(data.hourly.temperature_2m[now])}°C`;
-                        else if (param === 'Вологість') value = `${data.hourly.relativehumidity_2m[now]}%`;
-                        html += `<td>${value}</td>`;
+
+                ['gfs', 'icon', 'ecmwf'].forEach(m => {
+                    const d = STATE.data[m];
+                    if (d) {
+                        const now = findNow(d);
+                        const val = param === 'Вітер 10м' 
+                            ? `${Math.round(d.hourly.windspeed_10m[now])} км/год`
+                            : `${Math.round(d.hourly.temperature_2m[now])}°C`;
+                        html += `<td>${val}</td>`;
                     } else {
                         html += '<td>-</td>';
                     }
                 });
 
-                const wd = appState.weatherData.windy;
+                const wd = STATE.data.windy;
                 if (wd) {
-                    let value = '-';
-                    if (param === 'Вітер 10м') {
-                        const wind = calculateWind(wd['wind_u-surface'][0], wd['wind_v-surface'][0]);
-                        value = `${Math.round(wind.speed)} км/год`;
-                    } else if (param === 'Температура') {
-                        value = `${Math.round(kelvinToCelsius(wd['temp-surface'][0]))}°C`;
-                    }
-                    html += `<td>${value}</td>`;
+                    const val = param === 'Вітер 10м'
+                        ? `${Math.round(calcWind(wd['wind_u-surface'][0], wd['wind_v-surface'][0]).speed)} км/год`
+                        : `${Math.round(wd['temp-surface'][0] - 273.15)}°C`;
+                    html += `<td>${val}</td>`;
                 } else {
                     html += '<td>-</td>';
                 }
@@ -737,81 +649,51 @@
             });
 
             html += '</tbody>';
-            document.getElementById('comparisonTable').innerHTML = html;
+            document.getElementById('compareTable').innerHTML = html;
         }
 
-        // Допоміжні функції
-        function calculateWind(u, v) {
+        function calcWind(u, v) {
             const speed = Math.sqrt(u * u + v * v) * 3.6;
             const direction = (Math.atan2(-u, -v) * 180 / Math.PI + 360) % 360;
             return { speed, direction };
         }
 
-        function kelvinToCelsius(k) {
-            return k - 273.15;
-        }
-
-        function getDirectionName(deg) {
+        function getDir(deg) {
             const dirs = ['Пн', 'ПнСх', 'Сх', 'ПдСх', 'Пд', 'ПдЗх', 'Зх', 'ПнЗх'];
             return dirs[Math.round(deg / 45) % 8];
         }
 
-        function getWeatherIcon(code) {
-            const icons = { 0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 61: '🌧️', 71: '🌨️', 95: '⛈️' };
-            return icons[code] || '🌤️';
-        }
-
-        function findCurrentHourIndex(data) {
+        function findNow(data) {
             const now = new Date().getHours();
             return data.hourly.time.findIndex(t => new Date(t).getHours() === now) || 0;
         }
 
-        function selectModel(model) {
-            appState.currentModel = model;
-            document.querySelectorAll('.model-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.model === model);
-            });
-            renderUI();
-        }
-
         function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('loadingDiv').style.display = show ? 'block' : 'none';
         }
 
-        function showAllSections() {
-            document.getElementById('modelSelector').style.display = 'block';
-            document.getElementById('tilesGrid').style.display = 'grid';
-            document.getElementById('timelineSection').style.display = 'block';
-            document.getElementById('profileSection').style.display = 'block';
-            document.getElementById('comparisonSection').style.display = 'block';
+        function showSections() {
+            document.getElementById('modelSelectorDiv').style.display = 'block';
+            document.getElementById('tilesDiv').style.display = 'grid';
+            document.getElementById('timelineDiv').style.display = 'block';
+            document.getElementById('profileDiv').style.display = 'block';
+            document.getElementById('compareDiv').style.display = 'block';
         }
 
-        function reloadData() {
-            loadAllData();
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('show');
         }
 
-        function openLocationModal() {
-            document.getElementById('locationModal').classList.add('active');
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
         }
 
-        function closeLocationModal() {
-            document.getElementById('locationModal').classList.remove('active');
-        }
-
-        function setPreset(lat, lon, name) {
-            document.getElementById('inputLat').value = lat;
-            document.getElementById('inputLon').value = lon;
-            document.getElementById('inputName').value = name + ', Україна';
-        }
-
-        function applyLocation() {
-            appState.currentLocation = {
-                lat: parseFloat(document.getElementById('inputLat').value),
-                lon: parseFloat(document.getElementById('inputLon').value),
-                name: document.getElementById('inputName').value
-            };
-            document.getElementById('locationName').textContent = appState.currentLocation.name;
-            closeLocationModal();
+        function applyNewLocation() {
+            STATE.lat = parseFloat(document.getElementById('latInput').value);
+            STATE.lon = parseFloat(document.getElementById('lonInput').value);
+            STATE.name = document.getElementById('nameInput').value;
+            document.getElementById('locationText').textContent = STATE.name;
+            closeModal();
             loadAllData();
         }
     </script>
