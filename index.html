@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UAV Forecast</title>
+    <title>UAV Forecast Pro v3 - Професійний планувальник польотів</title>
     
     <!-- External Libraries -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -11,7 +11,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="Styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <!-- Header -->
@@ -32,6 +32,7 @@
     <!-- Tabs Navigation -->
     <div class="tabs-nav">
         <button class="tab-btn active" data-tab="map">🗺️ Мапа</button>
+        <button class="tab-btn" data-tab="conditions">🌤️ Умови</button>
         <button class="tab-btn" data-tab="forecast">📊 Прогноз</button>
         <button class="tab-btn" data-tab="profile">📈 Профіль вітру</button>
         <button class="tab-btn" data-tab="compare">🔬 Порівняння</button>
@@ -60,7 +61,25 @@
             <div id="map"></div>
         </div>
 
-        <!-- Tab 2: FORECAST -->
+        <!-- Tab 2: CONDITIONS (НОВА) -->
+        <div id="conditionsTab" class="tab-content">
+            <!-- Model Selector -->
+            <div class="model-selector">
+                <div class="section-title">🎯 Модель для умов</div>
+                <div class="model-buttons" id="conditionsModelButtons">
+                    <button class="model-btn active" data-model="gfs">GFS</button>
+                    <button class="model-btn" data-model="icon">ICON</button>
+                    <button class="model-btn" data-model="ecmwf">ECMWF</button>
+                    <button class="model-btn" data-model="windy">Windy</button>
+                    <button class="model-btn" data-model="meteomatics">Meteomatics</button>
+                </div>
+            </div>
+
+            <!-- Tiles -->
+            <div class="tiles-grid" id="conditionsTilesGrid"></div>
+        </div>
+
+        <!-- Tab 3: FORECAST -->
         <div id="forecastTab" class="tab-content">
             <!-- Model Selector -->
             <div class="model-selector">
@@ -78,11 +97,11 @@
                     <button class="model-btn" data-model="windy">
                         Windy<br><small>8 висот до 5500м</small>
                     </button>
+                    <button class="model-btn" data-model="meteomatics">
+                        Meteomatics<br><small>До 2км висоти</small>
+                    </button>
                 </div>
             </div>
-
-            <!-- Tiles -->
-            <div class="tiles-grid" id="tilesGrid"></div>
 
             <!-- Timeline -->
             <div class="section">
@@ -315,6 +334,6 @@
     </div>
 
     <!-- Custom JavaScript -->
-    <script src="App.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
